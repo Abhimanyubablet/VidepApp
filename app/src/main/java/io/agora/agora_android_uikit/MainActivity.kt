@@ -30,46 +30,47 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        try {
-            agView = AgoraVideoViewer(
-                this, AgoraConnectionData("my-app-id"),
-                agoraSettings = this.settingsWithExtraButtons()
-            )
-        } catch (e: Exception) {
-            println(Log.ERROR, "VideoUIKit App", "Could not initialise AgoraVideoViewer. Check your App ID is valid. ${e.message}")
-            return
-        }
-        val set = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            FrameLayout.LayoutParams.MATCH_PARENT
-        )
-
-        this.addContentView(agView, set)
-
-        // Check that the camera and mic permissions are accepted before attempting to join
-        if (AgoraVideoViewer.requestPermission(this)) {
-            agView!!.join("test", role = Constants.CLIENT_ROLE_BROADCASTER)
-        } else {
-            val joinButton = Button(this)
-            joinButton.text = "Allow Camera and Microphone, then click here"
-            joinButton.setOnClickListener {
-                // When the button is clicked, check permissions again and join channel
-                // if permissions are granted.
-                if (AgoraVideoViewer.requestPermission(this)) {
-                    (joinButton.parent as ViewGroup).removeView(joinButton)
-                    agView!!.join("test", role = Constants.CLIENT_ROLE_BROADCASTER)
-                }
+        val btn = findViewById<Button>(R.id.btn)
+        btn.setOnClickListener {
+            try {
+                agView = AgoraVideoViewer(
+                    this,
+                    AgoraConnectionData("d9981cf4a63a44fc8c9e656940d4b2be"),
+                    agoraSettings = settingsWithExtraButtons()
+                )
+            } catch (e: Exception) {
+                Log.e("VideoUIKit App", "Could not initialize AgoraVideoViewer. Check your App ID is valid. ${e.message}")
+                return@setOnClickListener
             }
-            joinButton.setBackgroundColor(Color.GREEN)
-            joinButton.setTextColor(Color.RED)
-            this.addContentView(
-                joinButton,
-                FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 300)
+
+            val set = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.MATCH_PARENT
             )
+            addContentView(agView, set)
+
+            if (AgoraVideoViewer.requestPermission(this)) {
+                agView?.join("test", role = Constants.CLIENT_ROLE_BROADCASTER)
+            } else {
+                val joinButton = Button(this)
+                joinButton.text = "Allow Camera and Microphone, then click here"
+                joinButton.setOnClickListener {
+                    if (AgoraVideoViewer.requestPermission(this)) {
+                        (joinButton.parent as ViewGroup).removeView(joinButton)
+                        agView?.join("test", role = Constants.CLIENT_ROLE_BROADCASTER)
+                    }
+                }
+                joinButton.setBackgroundColor(Color.GREEN)
+                joinButton.setTextColor(Color.BLACK)
+                addContentView(
+                    joinButton,
+                    FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, 300)
+                )
+            }
         }
     }
 
-    fun settingsWithExtraButtons(): AgoraSettings {
+    private fun settingsWithExtraButtons(): AgoraSettings {
         val agoraSettings = AgoraSettings()
 
         val agBeautyButton = AgoraButton(this)
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
                 if (it.isSelected) android.R.drawable.star_on else android.R.drawable.star_off
             )
             it.background.setTint(if (it.isSelected) Color.GREEN else Color.GRAY)
-            this.agView?.agkit?.setBeautyEffectOptions(it.isSelected, this.agView?.beautyOptions)
+            agView?.agkit?.setBeautyEffectOptions(it.isSelected, agView?.beautyOptions)
         }
         agBeautyButton.setImageResource(android.R.drawable.star_off)
 
